@@ -1,0 +1,15 @@
+<div class="ts-wrap">
+  @if (open()) {
+    <div class="ts-menu">
+      @for (f of flavors; track f.id) {
+        <button class="ts-item" [class.active]="theme.flavor() === f.id" (click)="set(f.id)">
+          <span class="dot ctp-dot-{{f.id}}"></span>
+          {{ f.label }}
+        </button>
+      }
+    </div>
+  }
+  <button class="ts-btn" [class.active]="open()" (click)="open.set(!open())" title="Theme">
+    <lucide-icon [img]="PaletteIcon" size="16" />
+  </button>
+</div>

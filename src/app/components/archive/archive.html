@@ -1,0 +1,95 @@
+<div class="archive-wrap">
+  <!-- Trigger button -->
+  <button class="pill-btn" (click)="toggle()">
+    <lucide-icon [img]="ArchiveIcon" size="14" />
+    Archive
+    @if (todoService.archive().length > 0) {
+      <span class="badge">{{ todoService.archive().length }}</span>
+    }
+  </button>
+
+  <!-- Modal backdrop + panel -->
+  @if (open()) {
+    <div class="modal-backdrop" (click)="onBackdropClick($event)">
+      <div class="modal-panel" role="dialog" aria-modal="true">
+
+        <!-- Header -->
+        <div class="modal-header">
+          <div class="modal-title-row">
+            <lucide-icon [img]="ArchiveIcon" size="18" class="title-icon" />
+            <h2>Archive</h2>
+            <span class="entry-total">{{ todoService.archive().length }} days</span>
+          </div>
+          <button class="close-btn" (click)="toggle()">
+            <lucide-icon [img]="XIcon" size="18" />
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="modal-body">
+          @if (todoService.archive().length === 0) {
+            <div class="empty-state">
+              <lucide-icon [img]="ArchiveIcon" size="36" class="empty-icon" />
+              <p>No archived notes yet.</p>
+              <span>Tasks are automatically archived at the end of each day.</span>
+            </div>
+          }
+
+          @for (entry of todoService.archive(); track entry.date) {
+            <div class="date-group">
+              <!-- Date category header -->
+              <div class="date-header" (click)="toggleExpand(entry.date)">
+                <div class="date-left">
+                  <div class="date-badge">
+                    <span class="date-day">{{ getDayNum(entry.date) }}</span>
+                    <span class="date-month">{{ getMonth(entry.date) }}</span>
+                  </div>
+                  <div class="date-info">
+                    <span class="date-full">{{ formatDate(entry.date) }}</span>
+                    <div class="date-stats">
+                      <span class="stat done-stat">
+                        <lucide-icon [img]="CheckIcon" size="11" />
+                        {{ entry.todos | doneCount }} done
+                      </span>
+                      <span class="stat pending-stat">
+                        <lucide-icon [img]="CircleIcon" size="11" />
+                        {{ entry.todos.length - (entry.todos | doneCount) }} pending
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div class="date-right">
+                  <button class="del-btn" (click)="$event.stopPropagation(); todoService.deleteArchiveEntry(entry.date)" title="Delete">
+                    <lucide-icon [img]="TrashIcon" size="13" />
+                  </button>
+                  <lucide-icon
+                    [img]="expandedDate() === entry.date ? ChevronUpIcon : ChevronDownIcon"
+                    size="15"
+                    class="chevron"
+                  />
+                </div>
+              </div>
+
+              <!-- Todo items -->
+              @if (expandedDate() === entry.date) {
+                <ul class="todo-list">
+                  @for (todo of entry.todos; track todo.id) {
+                    <li class="todo-item" [class.done]="todo.done">
+                      <span class="todo-check" [class.done]="todo.done">
+                        @if (todo.done) {
+                          <lucide-icon [img]="CheckIcon" size="10" />
+                        }
+                      </span>
+                      <span class="todo-text">{{ todo.text }}</span>
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+          }
+        </div>
+
+      </div>
+    </div>
+  }
+</div>

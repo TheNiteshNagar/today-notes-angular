@@ -1,0 +1,40 @@
+<div class="player-wrap">
+  @if (!lofi.playing()) {
+    <!-- Minimized: only the play button -->
+    <button class="play-only-btn" (click)="lofi.toggle()" title="Play Lofi Music">
+      <lucide-icon [img]="PlayIcon" size="16" />
+    </button>
+  } @else {
+    <!-- Full pill: visible only when playing -->
+    <div class="player-pill">
+      <!-- Stream dots -->
+      <div class="stream-dots">
+        @for (s of lofi.streams; track s.url; let i = $index) {
+          <button class="stream-dot" [class.active]="lofi.currentIndex() === i"
+            [title]="s.label" (click)="lofi.selectStream(i)"></button>
+        }
+      </div>
+
+      <span class="track-name">{{ lofi.streams[lofi.currentIndex()].label }}</span>
+
+      <!-- Pause collapses back to mini -->
+      <button class="play-btn" (click)="lofi.toggle()">
+        <lucide-icon [img]="PauseIcon" size="13" />
+      </button>
+
+      <lucide-icon [img]="VolumeIcon" size="14" class="vol-icon" />
+      <input class="vol-slider" type="range" min="0" max="1" step="0.05"
+        [value]="lofi.volume()" (input)="lofi.setVolume(+$any($event.target).value)" />
+
+      <div class="wave-bars">
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+        <span class="wave-bar"></span>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,79 @@
+<div class="wp-wrap">
+  @if (showMenu()) {
+    <div class="wp-menu">
+      <p class="menu-title">Background</p>
+
+      <div class="tabs">
+        <button class="tab" [class.active]="activeTab() === 'local'" (click)="activeTab.set('local')">
+          <lucide-icon [img]="FolderIcon" size="12" /> Local
+        </button>
+        <button class="tab" [class.active]="activeTab() === 'auto'" (click)="activeTab.set('auto')">
+          <lucide-icon [img]="SparklesIcon" size="12" /> Auto
+        </button>
+        <button class="tab" [class.active]="activeTab() === 'url'" (click)="activeTab.set('url')">
+          <lucide-icon [img]="LinkIcon" size="12" /> URL
+        </button>
+      </div>
+
+      @if (activeTab() === 'local') {
+        <label class="menu-item" [class.disabled]="loading()">
+          @if (loading()) {
+            <lucide-icon [img]="LoaderIcon" size="14" class="spin" />
+            <span>Saving...</span>
+          } @else {
+            <lucide-icon [img]="FolderIcon" size="14" />
+            <span>Choose File</span>
+            <span class="hint">jpg · gif · mp4</span>
+          }
+          <input type="file" accept="image/*,video/mp4,video/webm,video/ogg"
+            (change)="onFileChange($event)" [disabled]="loading()" hidden />
+        </label>
+      }
+
+      @if (activeTab() === 'auto') {
+        <div class="auto-section">
+          <p class="auto-desc">Random anime wallpaper from Waifu.pics</p>
+          <div class="auto-styles">
+            @for (api of animeApis; track api.label; let i = $index) {
+              <button class="style-chip" [class.active]="autoApiIndex() === i" (click)="autoApiIndex.set(i)">
+                {{ api.label }}
+              </button>
+            }
+          </div>
+          <button class="fetch-btn" (click)="fetchAnime()" [disabled]="loading()">
+            @if (loading()) {
+              <lucide-icon [img]="LoaderIcon" size="13" class="spin" /> Fetching...
+            } @else {
+              <lucide-icon [img]="RefreshIcon" size="13" /> Get Wallpaper
+            }
+          </button>
+        </div>
+      }
+
+      @if (activeTab() === 'url') {
+        <div class="url-row" [class.disabled]="loading()">
+          <lucide-icon [img]="LinkIcon" size="13" class="url-icon" />
+          <input [(ngModel)]="urlInput" placeholder="Image or video URL..."
+            (keyup.enter)="applyUrl()" [disabled]="loading()" />
+          <button class="apply-btn" (click)="applyUrl()"
+            [disabled]="!urlInput.trim() || loading()">Apply</button>
+        </div>
+      }
+
+      @if (hasWp()) {
+        <button class="remove-btn" (click)="remove()">
+          <lucide-icon [img]="XIcon" size="13" /> Remove
+        </button>
+      }
+    </div>
+  }
+
+  <button class="wp-btn" [class.active]="hasWp()" [class.loading]="loading()"
+    (click)="showMenu.set(!showMenu())" title="Wallpaper">
+    @if (loading()) {
+      <lucide-icon [img]="LoaderIcon" size="16" class="spin" />
+    } @else {
+      <lucide-icon [img]="ImagePlusIcon" size="16" />
+    }
+  </button>
+</div>

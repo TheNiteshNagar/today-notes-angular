@@ -1,0 +1,65 @@
+<div class="todo-section">
+  <div class="section-header">
+    <span class="section-label">Today's Tasks</span>
+    <span class="count">{{ todoService.todos().length }}</span>
+  </div>
+
+  <!-- Add Input -->
+  <div class="add-bar">
+    <input
+      [(ngModel)]="newText"
+      (keyup.enter)="add()"
+      placeholder="Add a task and press Enter..."
+      class="add-input"
+    />
+    <button class="add-btn" (click)="add()" [disabled]="!newText.trim()">
+      <lucide-icon [img]="PlusIcon" size="18" />
+    </button>
+  </div>
+
+  <!-- Todo Items -->
+  <div class="todo-list">
+    @if (todoService.todos().length === 0) {
+      <div class="empty-state">
+        <lucide-icon [img]="SparklesIcon" size="28" class="empty-icon" />
+        <p>No tasks yet. Add something to focus on!</p>
+      </div>
+    }
+    @for (todo of todoService.todos(); track todo.id) {
+      <div class="todo-item" [class.done]="todo.done">
+        <button class="checkbox" (click)="todoService.toggle(todo.id)" [class.checked]="todo.done">
+          @if (todo.done) {
+            <lucide-icon [img]="CheckIcon" size="12" />
+          }
+        </button>
+
+        @if (editingId() === todo.id) {
+          <input
+            class="edit-input"
+            [ngModel]="editText()"
+            (ngModelChange)="editText.set($event)"
+            (keyup.enter)="saveEdit(todo.id)"
+            (keyup.escape)="cancelEdit()"
+            autofocus
+          />
+          <button class="action-btn save" (click)="saveEdit(todo.id)">
+            <lucide-icon [img]="CheckIcon" size="14" />
+          </button>
+          <button class="action-btn cancel" (click)="cancelEdit()">
+            <lucide-icon [img]="XIcon" size="14" />
+          </button>
+        } @else {
+          <span class="todo-text">{{ todo.text }}</span>
+          <div class="todo-actions">
+            <button class="action-btn edit" (click)="startEdit(todo.id, todo.text)">
+              <lucide-icon [img]="PencilIcon" size="13" />
+            </button>
+            <button class="action-btn delete" (click)="todoService.delete(todo.id)">
+              <lucide-icon [img]="TrashIcon" size="13" />
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,23 @@
+<div class="modal-backdrop">
+  <div class="modal-card">
+    <div class="modal-logo">
+      <lucide-icon [img]="NotebookIcon" size="32" />
+    </div>
+    <h1>Today Notes</h1>
+    <p class="subtitle">Your focused daily workspace</p>
+    <form (ngSubmit)="submit()">
+      <div class="field">
+        <label>Your Name</label>
+        <input [(ngModel)]="name" name="name" placeholder="e.g. Nitesh" required autocomplete="off" />
+      </div>
+      <div class="field">
+        <label>Who are you?</label>
+        <input [(ngModel)]="role" name="role" placeholder="e.g. Software Developer" required autocomplete="off" />
+      </div>
+      <button type="submit" [disabled]="!name.trim() || !role.trim()">
+        Get Started
+        <lucide-icon [img]="ArrowRightIcon" size="16" />
+      </button>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,34 @@
+<div class="search-bar">
+  <div class="engine-wrap">
+    <button class="engine-btn" (click)="toggleEngineMenu($event)" [title]="engines[searchEngine()].label">
+      <span class="engine-icon" [innerHTML]="engines[searchEngine()].icon"></span>
+    </button>
+  </div>
+
+  <div class="divider"></div>
+
+  <input
+    [(ngModel)]="searchQuery"
+    (keyup.enter)="search()"
+    placeholder="Search the web..."
+    class="search-input"
+  />
+
+  <button class="search-btn" (click)="search()" [disabled]="!searchQuery.trim()">
+    <lucide-icon [img]="ArrowRightIcon" size="15" />
+  </button>
+</div>
+
+@if (showEngineMenu()) {
+  <div class="engine-dropdown"
+    [style.top.px]="dropdownTop"
+    [style.left.px]="dropdownLeft">
+    <p class="dropdown-label">Search Engine</p>
+    @for (k of engineKeys; track k) {
+      <button class="dropdown-item" [class.active]="searchEngine() === k" (click)="setEngine(k)">
+        <span class="engine-icon sm" [innerHTML]="engines[k].icon"></span>
+        {{ engines[k].label }}
+      </button>
+    }
+  </div>
+}

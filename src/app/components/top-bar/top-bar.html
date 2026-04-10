@@ -1,0 +1,42 @@
+<div class="top-bar">
+  <div class="greeting">
+    <h1 class="greeting-text">
+      {{ greeting() }},&nbsp;<span class="name">{{ user()?.name }}</span>
+    </h1>
+    <p class="role">{{ user()?.role }}</p>
+  </div>
+
+  <div class="actions">
+    <!-- Focus mode -->
+    <div class="dropdown-wrap">
+      <button class="icon-btn" [class.active]="isFocused"
+        (click)="showFocusMenu.set(!showFocusMenu())" title="Focus Mode">
+        <lucide-icon [img]="isFocused ? EyeOffIcon : EyeIcon" size="16" />
+      </button>
+      @if (showFocusMenu()) {
+        <div class="focus-dropdown">
+          <p class="focus-label">Hide</p>
+          <button class="focus-item" [class.active]="focusMode() === 'search'" (click)="setFocus('search')">
+            <lucide-icon [img]="SearchIcon" size="14" />
+            Search Bar
+          </button>
+          <button class="focus-item" [class.active]="focusMode() === 'todos'" (click)="setFocus('todos')">
+            <lucide-icon [img]="TodoIcon" size="14" />
+            Todo Section
+          </button>
+          <button class="focus-item" [class.active]="focusMode() === 'both'" (click)="setFocus('both')">
+            <lucide-icon [img]="BothIcon" size="14" />
+            Both
+          </button>
+        </div>
+      }
+    </div>
+
+    <!-- Fullscreen -->
+    <button class="icon-btn" (click)="toggleFullscreen()" title="Fullscreen">
+      <lucide-icon [img]="isFullscreen() ? MinimizeIcon : MaximizeIcon" size="16" />
+    </button>
+
+
+  </div>
+</div>

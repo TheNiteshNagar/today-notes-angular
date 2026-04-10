@@ -1,0 +1,36 @@
+@if (!user()) {
+  <app-login-modal (submitted)="onLogin($event)" />
+}
+
+@if (user()) {
+  <app-top-bar (focusChanged)="onFocusChanged($event)" />
+
+  <div class="page">
+    @if (!hideSearch) {
+      <div class="search-wrap fade-section">
+        <app-header />
+      </div>
+    }
+
+    @if (!hideTodos) {
+      <div class="card fade-section">
+        <app-todo-list />
+        <div class="card-footer">
+          <app-archive />
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="corner-bl">
+    <app-wallpaper />
+  </div>
+
+  <div class="music-float">
+    <app-music-player />
+  </div>
+
+  <div class="corner-br">
+    <app-theme-switcher />
+  </div>
+}

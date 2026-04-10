@@ -1,0 +1,131 @@
+.player-wrap { display: flex; justify-content: center; }
+
+/* ── Minimized: just a floating play button ── */
+.play-only-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--ctp-surface1) 65%, transparent);
+  background: color-mix(in srgb, var(--ctp-mantle) 88%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: var(--ctp-subtext1);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, transform 0.15s, border-color 0.2s;
+  animation: pillIn 0.2s ease;
+  lucide-icon { pointer-events: none; }
+
+  &:hover {
+    background: var(--ctp-surface0);
+    color: var(--ctp-mauve);
+    border-color: var(--ctp-mauve);
+    transform: scale(1.08);
+  }
+}
+
+/* ── Full pill when playing ── */
+.player-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  background: color-mix(in srgb, var(--ctp-mantle) 90%, transparent);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid color-mix(in srgb, var(--ctp-mauve) 40%, transparent);
+  border-radius: 999px;
+  padding: 0.6rem 1.1rem;
+  white-space: nowrap;
+  animation: pillIn 0.25s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+@keyframes pillIn {
+  from { opacity: 0; transform: scale(0.85) translateY(6px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Stream dots — 3 streams */
+.stream-dots { display: flex; align-items: center; gap: 5px; }
+
+.stream-dot {
+  width: 9px; height: 9px;
+  border-radius: 50%; border: none; cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s, box-shadow 0.2s;
+  opacity: 0.4;
+  &:nth-child(1) { background: #f38ba8; } /* pink — Lofi Girl */
+  &:nth-child(2) { background: #f9e2af; } /* yellow — Chillhop */
+  &:nth-child(3) { background: #a6e3a1; } /* green — Lofi Beats */
+  &.active { opacity: 1; transform: scale(1.35); box-shadow: 0 0 5px currentColor; }
+  &:hover:not(.active) { opacity: 0.75; transform: scale(1.1); }
+}
+
+.track-name {
+  font-size: 0.83rem; font-weight: 500;
+  color: var(--ctp-subtext1);
+  min-width: 88px; letter-spacing: 0.01em;
+}
+
+.play-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px;
+  border-radius: 50%; border: none;
+  background: var(--ctp-mauve);
+  color: var(--ctp-base);
+  cursor: pointer; flex-shrink: 0;
+  transition: background 0.2s, transform 0.15s;
+  &:hover { transform: scale(1.1); opacity: 0.85; }
+  lucide-icon { pointer-events: none; }
+}
+
+.vol-icon { color: var(--ctp-overlay1); flex-shrink: 0; }
+
+.vol-slider {
+  width: 72px; height: 3px;
+  -webkit-appearance: none; appearance: none;
+  background: var(--ctp-surface2);
+  border-radius: 999px; outline: none; cursor: pointer; flex-shrink: 0;
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 13px; height: 13px;
+    border-radius: 50%; background: var(--ctp-mauve);
+    cursor: pointer; transition: transform 0.15s;
+  }
+  &:hover::-webkit-slider-thumb { transform: scale(1.3); }
+}
+
+/* Wave bars */
+.wave-bars {
+  display: flex; align-items: center;
+  gap: 3px; height: 20px; flex-shrink: 0;
+}
+
+.wave-bar {
+  width: 3px; border-radius: 3px;
+  background: var(--ctp-mauve);
+  transform-origin: center;
+  animation: waveBar var(--dur, 0.9s) ease-in-out infinite var(--delay, 0s);
+  &:nth-child(1) { height: 5px;  --dur: 0.85s; --delay: 0.00s; }
+  &:nth-child(2) { height: 10px; --dur: 1.10s; --delay: 0.12s; }
+  &:nth-child(3) { height: 16px; --dur: 0.75s; --delay: 0.24s; }
+  &:nth-child(4) { height: 8px;  --dur: 1.20s; --delay: 0.06s; }
+  &:nth-child(5) { height: 13px; --dur: 0.90s; --delay: 0.18s; }
+  &:nth-child(6) { height: 6px;  --dur: 1.05s; --delay: 0.30s; }
+  &:nth-child(7) { height: 11px; --dur: 0.80s; --delay: 0.09s; }
+}
+
+@keyframes waveBar {
+  0%   { transform: scaleY(0.25); }
+  25%  { transform: scaleY(1.0); }
+  50%  { transform: scaleY(0.5); }
+  75%  { transform: scaleY(0.9); }
+  100% { transform: scaleY(0.25); }
+}
+
+@media (max-width: 600px) {
+  .player-pill { padding: 0.5rem 0.85rem; gap: 0.5rem; }
+  .vol-slider { width: 55px; }
+  .track-name { min-width: 70px; font-size: 0.78rem; }
+  .wave-bar:nth-child(n+6) { display: none; }
+}
