@@ -193,9 +193,11 @@ export class WallpaperComponent implements OnInit, OnDestroy {
 
     // Auto-resume on any pause (browser-initiated or tab switch)
     v.addEventListener('pause', () => {
-      // Small delay to avoid fighting with intentional pauses during seek
-      setTimeout(() => { if (v.paused && !v.ended) v.play().catch(() => {}); }, 300);
+      setTimeout(() => { if (v.paused) v.play().catch(() => {}); }, 300);
     });
+
+    // Restart immediately when video ends (belt-and-suspenders alongside loop)
+    v.addEventListener('ended', () => { v.currentTime = 0; v.play().catch(() => {}); });
 
     // Recover from stall/suspend
     v.addEventListener('stalled', () => { v.load(); v.play().catch(() => {}); });
