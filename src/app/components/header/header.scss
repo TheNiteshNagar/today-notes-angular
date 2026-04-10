@@ -33,16 +33,16 @@
 }
 
 .engine-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   width: 20px;
   height: 20px;
+  object-fit: contain;
+  border-radius: 3px;
   pointer-events: none;
-  ::ng-deep svg { width: 20px !important; height: 20px !important; display: block; }
+  display: block;
+
   &.sm {
-    width: 16px; height: 16px;
-    ::ng-deep svg { width: 16px !important; height: 16px !important; }
+    width: 16px;
+    height: 16px;
   }
 }
 
