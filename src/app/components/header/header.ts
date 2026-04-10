@@ -44,7 +44,7 @@ export class HeaderComponent {
 
   search(): void {
     if (!this.searchQuery.trim()) return;
-    window.open(ENGINES[this.searchEngine()].url + encodeURIComponent(this.searchQuery.trim()), '_blank');
+    window.open(ENGINES[this.searchEngine()].url + encodeURIComponent(this.searchQuery.trim()), '_self');
     this.searchQuery = '';
   }
 
