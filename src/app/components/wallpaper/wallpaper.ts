@@ -3,11 +3,19 @@ import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, ImagePlus, FolderOpen, Link2, X, Loader, RefreshCw, Sparkles } from 'lucide-angular';
 import { IdbService } from '../../services/idb';
 
-export type WpType = 'image' | 'video';
-export type WpTab = 'local' | 'auto' | 'url';
+export type WpType     = 'image' | 'video';
+export type WpTab      = 'local' | 'auto' | 'url';
+export type WpPosition = 'top' | 'center' | 'bottom';
 
-const LS_KEY   = 'tn_wallpaper';
-const LS_VIDEO = 'tn_wp_video';
+const LS_KEY      = 'tn_wallpaper';
+const LS_VIDEO    = 'tn_wp_video';
+const LS_POSITION = 'tn_wp_position';
+
+const POSITIONS: { label: string; value: WpPosition }[] = [
+  { label: 'Top',    value: 'top'    },
+  { label: 'Center', value: 'center' },
+  { label: 'Bottom', value: 'bottom' },
+];
 
 const ANIME_APIS = [
   { label: 'Waifu',   fetch: () => fetch('https://api.waifu.pics/sfw/waifu').then(r => r.json()).then((d: any) => d.url as string) },
@@ -20,101 +28,166 @@ const ANIME_APIS = [
   selector: 'app-wallpaper',
   imports: [FormsModule, LucideAngularModule],
   templateUrl: './wallpaper.html',
-  styleUrl: './wallpaper.scss'
+  styleUrl:    './wallpaper.scss'
 })
 export class WallpaperComponent implements OnInit, OnDestroy {
   private zone = inject(NgZone);
-  private idb = inject(IdbService);
+  private idb  = inject(IdbService);
 
-  showMenu = signal(false);
-  activeTab = signal<WpTab>('local');
-  urlInput = '';
-  loading = signal(false);
-  hasWp = signal(false);
+  showMenu     = signal(false);
+  activeTab    = signal<WpTab>('local');
+  urlInput     = '';
+  loading      = signal(false);
+  hasWp        = signal(false);
   autoApiIndex = signal(0);
-  animeApis = ANIME_APIS;
+  animeApis    = ANIME_APIS;
+  positions    = POSITIONS;
+  wpPosition   = signal<WpPosition>('center');
+  isVideo      = signal(false);
 
-  // Bound handlers so we can remove them on destroy
-  private onVisibility = () => {
-    if (document.visibilityState === 'visible') this.ensureVideoPlaying();
-  };
-  private onWindowFocus = () => this.ensureVideoPlaying();
+  private onVisible    = () => { if (document.visibilityState === 'visible') this.resumeVideo(); };
+  private onFocus      = () => this.resumeVideo();
+  private onPageShow   = () => this.resumeVideo();
+  private onInteract   = () => { this.resumeVideo(); this.removeInteractListeners(); };
 
   readonly ImagePlusIcon = ImagePlus;
-  readonly FolderIcon = FolderOpen;
-  readonly LinkIcon = Link2;
-  readonly XIcon = X;
-  readonly LoaderIcon = Loader;
-  readonly RefreshIcon = RefreshCw;
-  readonly SparklesIcon = Sparkles;
+  readonly FolderIcon    = FolderOpen;
+  readonly LinkIcon      = Link2;
+  readonly XIcon         = X;
+  readonly LoaderIcon    = Loader;
+  readonly RefreshIcon   = RefreshCw;
+  readonly SparklesIcon  = Sparkles;
 
   async ngOnInit(): Promise<void> {
-    // Register global keep-alive handlers outside Angular zone (no CD overhead)
+    const savedPos = localStorage.getItem(LS_POSITION) as WpPosition | null;
+    if (savedPos) this.wpPosition.set(savedPos);
+
     this.zone.runOutsideAngular(() => {
-      document.addEventListener('visibilitychange', this.onVisibility);
-      window.addEventListener('focus', this.onWindowFocus);
+      document.addEventListener('visibilitychange', this.onVisible);
+      window.addEventListener('focus',    this.onFocus);
+      window.addEventListener('pageshow', this.onPageShow);
+      document.addEventListener('click',   this.onInteract, { once: true });
+      document.addEventListener('keydown', this.onInteract, { once: true });
     });
 
-    // Restore video from IndexedDB
-    if (localStorage.getItem(LS_VIDEO)) {
-      const storedVal = localStorage.getItem(LS_VIDEO)!;
-      // Could be '1' (blob in IDB) or a URL string
-      if (storedVal === '1') {
-        const url = await this.idb.loadVideo();
-        if (url) {
-          this.zone.run(() => { this.applyVideoToDOM(url); this.hasWp.set(true); });
-          return;
-        }
-        localStorage.removeItem(LS_VIDEO);
+    const lsVideo = localStorage.getItem(LS_VIDEO);
+
+    if (lsVideo === '1') {
+      // Blob stored in IDB — load it and set src on the pre-boot element or create one
+      const url = await this.idb.loadVideo();
+      if (url) {
+        this.zone.run(() => { this.setVideoSrc(url); this.hasWp.set(true); this.isVideo.set(true); });
       } else {
-        // It's a direct URL
-        this.zone.run(() => { this.applyVideoToDOM(storedVal); this.hasWp.set(true); });
-        return;
+        localStorage.removeItem(LS_VIDEO);
       }
+      return;
     }
 
-    // Restore image from localStorage
+    if (lsVideo) {
+      // Direct URL — pre-boot script already created the element; just sync state
+      this.zone.run(() => {
+        this.ensureVideoElement(lsVideo);
+        this.hasWp.set(true);
+        this.isVideo.set(true);
+      });
+      return;
+    }
+
+    // Image wallpaper
     const raw = localStorage.getItem(LS_KEY);
     if (!raw) return;
     try {
-      const data = JSON.parse(raw) as { src: string; type: WpType };
-      if (data.src) { this.applyImageToDOM(data.src); this.hasWp.set(true); }
+      const data = JSON.parse(raw) as { src: string };
+      if (data.src) { this.applyImage(data.src); this.hasWp.set(true); }
     } catch {
       const src = raw.replace(/^"|"$/g, '');
-      if (src) { this.applyImageToDOM(src); this.hasWp.set(true); }
+      if (src) { this.applyImage(src); this.hasWp.set(true); }
     }
   }
 
   ngOnDestroy(): void {
-    document.removeEventListener('visibilitychange', this.onVisibility);
-    window.removeEventListener('focus', this.onWindowFocus);
+    document.removeEventListener('visibilitychange', this.onVisible);
+    window.removeEventListener('focus',    this.onFocus);
+    window.removeEventListener('pageshow', this.onPageShow);
+    this.removeInteractListeners();
   }
 
-  /** Ensure video keeps playing — called on visibility/focus restore */
-  private ensureVideoPlaying(): void {
-    const v = document.getElementById('bg-video') as HTMLVideoElement | null;
-    if (v && v.paused) v.play().catch(() => {});
+  private removeInteractListeners(): void {
+    document.removeEventListener('click',   this.onInteract);
+    document.removeEventListener('keydown', this.onInteract);
+  }
+
+  private getVideo(): HTMLVideoElement | null {
+    return document.getElementById('bg-video') as HTMLVideoElement | null;
+  }
+
+  private resumeVideo(): void {
+    const v = this.getVideo();
+    if (v && v.src && v.paused) v.play().catch(() => {});
+  }
+
+  /** Ensure a video element exists with the right src — reuse pre-boot element if present */
+  private ensureVideoElement(src: string): HTMLVideoElement {
+    let v = this.getVideo();
+    if (!v) {
+      v = document.createElement('video');
+      v.id = 'bg-video';
+      v.loop = true;
+      v.muted = true;
+      v.playsInline = true;
+      v.setAttribute('playsinline', '');
+      v.setAttribute('disablepictureinpicture', '');
+      v.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;object-fit:cover;z-index:-1;pointer-events:none;';
+      document.documentElement.appendChild(v);
+    }
+    v.style.display        = 'block';
+    v.style.objectPosition = `center ${this.wpPosition()}`;
+    v.autoplay = true;
+    if (v.src !== src) { v.src = src; v.load(); }
+    v.play().catch(() => {});
+    document.body.style.backgroundImage = '';
+    return v;
+  }
+
+  private setVideoSrc(src: string): void {
+    this.ensureVideoElement(src);
+  }
+
+  private applyImage(src: string): void {
+    const v = this.getVideo();
+    if (v) { v.pause(); v.removeAttribute('src'); v.load(); v.style.display = 'none'; }
+    document.body.style.backgroundImage    = `url("${src}")`;
+    document.body.style.backgroundPosition = `center ${this.wpPosition()}`;
+  }
+
+  setPosition(pos: WpPosition): void {
+    this.wpPosition.set(pos);
+    localStorage.setItem(LS_POSITION, pos);
+    document.body.style.backgroundPosition = `center ${pos}`;
+    const v = this.getVideo();
+    if (v) v.style.objectPosition = `center ${pos}`;
   }
 
   onFileChange(event: Event): void {
     const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
+    const file  = input.files?.[0];
     input.value = '';
     if (!file) return;
 
-    const isVideo = file.type.startsWith('video');
+    const isVid = file.type.startsWith('video');
     this.loading.set(true);
 
-    if (isVideo) {
+    if (isVid) {
       this.idb.saveVideo(file)
         .then(() => this.idb.loadVideo())
-        .then((url) => {
+        .then(url => {
           this.zone.run(() => {
             if (url) {
               localStorage.setItem(LS_VIDEO, '1');
               localStorage.removeItem(LS_KEY);
-              this.applyVideoToDOM(url);
+              this.setVideoSrc(url);
               this.hasWp.set(true);
+              this.isVideo.set(true);
             }
             this.loading.set(false);
             this.showMenu.set(false);
@@ -125,13 +198,9 @@ export class WallpaperComponent implements OnInit, OnDestroy {
     }
 
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = e => {
       const src = e.target!.result as string;
-      this.zone.run(() => {
-        this.persistImage(src);
-        this.loading.set(false);
-        this.showMenu.set(false);
-      });
+      this.zone.run(() => { this.persistImage(src); this.loading.set(false); this.showMenu.set(false); });
     };
     reader.onerror = () => this.zone.run(() => this.loading.set(false));
     reader.readAsDataURL(file);
@@ -140,12 +209,13 @@ export class WallpaperComponent implements OnInit, OnDestroy {
   applyUrl(): void {
     const url = this.urlInput.trim();
     if (!url) return;
-    const isVideo = /\.(mp4|webm|ogg|mov)(\?|$)/i.test(url);
-    if (isVideo) {
+    const isVid = /\.(mp4|webm|ogg|mov)(\?|$)/i.test(url);
+    if (isVid) {
       localStorage.setItem(LS_VIDEO, url);
       localStorage.removeItem(LS_KEY);
-      this.applyVideoToDOM(url);
+      this.setVideoSrc(url);
       this.hasWp.set(true);
+      this.isVideo.set(true);
     } else {
       this.persistImage(url);
     }
@@ -167,58 +237,19 @@ export class WallpaperComponent implements OnInit, OnDestroy {
     localStorage.removeItem(LS_KEY);
     localStorage.removeItem(LS_VIDEO);
     this.idb.clearVideo();
-    this.removeFromDOM();
+    const v = this.getVideo();
+    if (v) { v.pause(); v.removeAttribute('src'); v.load(); v.style.display = 'none'; }
+    document.body.style.backgroundImage = '';
     this.hasWp.set(false);
+    this.isVideo.set(false);
     this.showMenu.set(false);
   }
 
   private persistImage(src: string): void {
     try { localStorage.setItem(LS_KEY, JSON.stringify({ src, type: 'image' })); } catch { /* quota */ }
     localStorage.removeItem(LS_VIDEO);
-    this.applyImageToDOM(src);
+    this.applyImage(src);
     this.hasWp.set(true);
-  }
-
-  private applyVideoToDOM(src: string): void {
-    this.removeFromDOM();
-    const v = document.createElement('video');
-    v.id = 'bg-video';
-    v.src = src;
-    v.autoplay = true;
-    v.loop = true;
-    v.muted = true;
-    v.playsInline = true;
-    v.setAttribute('playsinline', '');
-    v.setAttribute('disablepictureinpicture', '');
-
-    // Auto-resume on any pause (browser-initiated or tab switch)
-    v.addEventListener('pause', () => {
-      setTimeout(() => { if (v.paused) v.play().catch(() => {}); }, 300);
-    });
-
-    // Restart immediately when video ends (belt-and-suspenders alongside loop)
-    v.addEventListener('ended', () => { v.currentTime = 0; v.play().catch(() => {}); });
-
-    // Recover from stall/suspend
-    v.addEventListener('stalled', () => { v.load(); v.play().catch(() => {}); });
-    v.addEventListener('suspend', () => { if (v.paused) v.play().catch(() => {}); });
-
-    // Start playing as soon as enough data is available
-    v.addEventListener('loadeddata', () => v.play().catch(() => {}));
-
-    document.body.prepend(v);
-    v.play().catch(() => {});
-  }
-
-  private applyImageToDOM(src: string): void {
-    this.removeFromDOM();
-    document.body.style.backgroundImage = `url("${src}")`;
-    // GIF loops automatically as background-image — no extra handling needed
-  }
-
-  private removeFromDOM(): void {
-    const old = document.getElementById('bg-video') as HTMLVideoElement | null;
-    if (old) { old.pause(); old.src = ''; old.remove(); }
-    document.body.style.backgroundImage = '';
+    this.isVideo.set(false);
   }
 }

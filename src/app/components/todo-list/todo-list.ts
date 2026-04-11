@@ -14,6 +14,7 @@ export class TodoListComponent {
   newText = '';
   editingId = signal<string | null>(null);
   editText = signal('');
+  confirmDeleteId = signal<string | null>(null);
 
   readonly PlusIcon = Plus;
   readonly PencilIcon = Pencil;
@@ -40,4 +41,11 @@ export class TodoListComponent {
   }
 
   cancelEdit(): void { this.editingId.set(null); }
+
+  requestDelete(id: string): void { this.confirmDeleteId.set(id); }
+  cancelDelete(): void { this.confirmDeleteId.set(null); }
+  doDelete(): void {
+    const id = this.confirmDeleteId();
+    if (id) { this.todoService.delete(id); this.confirmDeleteId.set(null); }
+  }
 }

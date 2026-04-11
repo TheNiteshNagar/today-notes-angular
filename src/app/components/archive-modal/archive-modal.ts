@@ -7,16 +7,17 @@ import {
 } from 'lucide-angular';
 
 @Component({
-  selector: 'app-archive',
+  selector: 'app-archive-modal',
   imports: [DoneCountPipe, LucideAngularModule],
-  templateUrl: './archive.html',
-  styleUrl: './archive.scss'
+  templateUrl: './archive-modal.html',
+  styleUrl: './archive-modal.scss'
 })
-export class ArchiveComponent {
-  todoService = inject(TodoService);
-  open = signal(false);
-  expandedDate = signal<string | null>(null);
-  confirmDeleteDate = signal<string | null>(null);
+export class ArchiveModalComponent {
+  svc = inject(TodoService);
+
+  archiveOpen = signal(false);
+  archiveExpandedDate = signal<string | null>(null);
+  archiveConfirmDelete = signal<string | null>(null);
 
   readonly ArchiveIcon = Archive;
   readonly XIcon = X;
@@ -26,20 +27,25 @@ export class ArchiveComponent {
   readonly CheckIcon = Check;
   readonly CircleIcon = Circle;
 
-  toggle(): void {
-    this.open.update(v => !v);
-    if (!this.open()) { this.expandedDate.set(null); this.confirmDeleteDate.set(null); }
+  close(): void {
+    this.archiveOpen.set(false);
+    this.archiveExpandedDate.set(null);
+    this.archiveConfirmDelete.set(null);
   }
 
   onBackdropClick(e: MouseEvent): void {
-    if ((e.target as HTMLElement).classList.contains('modal-backdrop')) this.toggle();
+    if ((e.target as HTMLElement).classList.contains('modal-backdrop')) this.close();
   }
 
-  requestDelete(date: string): void { this.confirmDeleteDate.set(date); }
-  cancelDelete(): void { this.confirmDeleteDate.set(null); }
+  requestDelete(date: string): void { this.archiveConfirmDelete.set(date); }
+  cancelDelete(): void { this.archiveConfirmDelete.set(null); }
   doDelete(): void {
-    const d = this.confirmDeleteDate();
-    if (d) { this.todoService.deleteArchiveEntry(d); this.confirmDeleteDate.set(null); }
+    const d = this.archiveConfirmDelete();
+    if (d) { this.svc.deleteArchiveEntry(d); this.archiveConfirmDelete.set(null); }
+  }
+
+  toggleExpand(date: string): void {
+    this.archiveExpandedDate.set(this.archiveExpandedDate() === date ? null : date);
   }
 
   formatDate(d: string): string {
@@ -54,9 +60,5 @@ export class ArchiveComponent {
 
   getMonth(d: string): string {
     return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
-  }
-
-  toggleExpand(date: string): void {
-    this.expandedDate.set(this.expandedDate() === date ? null : date);
   }
 }

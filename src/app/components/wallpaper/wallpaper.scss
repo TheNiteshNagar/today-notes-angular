@@ -128,6 +128,34 @@
   &:disabled { opacity: 0.4; cursor: not-allowed; }
 }
 
+.position-section {
+  display: flex; flex-direction: column; gap: 0.35rem;
+  padding-top: 0.1rem;
+  border-top: 1px solid var(--ctp-surface0);
+}
+
+.section-label {
+  font-size: 0.68rem; font-weight: 700; color: var(--ctp-overlay0);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  padding: 0 0.25rem;
+  margin: 0;
+}
+
+.position-grid {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.pos-btn {
+  padding: 0.28rem 0.3rem;
+  background: var(--ctp-surface0); border: 1px solid var(--ctp-surface1);
+  border-radius: 0.45rem; color: var(--ctp-subtext0); font-size: 0.68rem;
+  font-family: inherit; cursor: pointer; text-align: center; white-space: nowrap;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  &.active { background: var(--ctp-mauve); color: var(--ctp-base); border-color: var(--ctp-mauve); }
+  &:hover:not(.active) { background: var(--ctp-surface1); color: var(--ctp-text); }
+}
+
 .remove-btn {
   display: flex; align-items: center; gap: 0.5rem;
   background: none;

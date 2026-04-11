@@ -12,6 +12,159 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      #bg-video {
+        position: fixed; inset: 0;
+        width: 100vw; height: 100vh;
+        object-fit: cover;
+        z-index: -1;
+        pointer-events: none;
+        display: none;
+      }
+    </style>
+    <!--
+      Pre-boot script: runs synchronously before Angular initialises.
+      Sets the video src immediately so the browser can begin buffering
+      and grants autoplay permission before any user interaction check.
+    -->
+    <script>
+      (function () {
+        /* ── Wallpaper pre-boot ── */
+        try {
+          var pos = localStorage.getItem('tn_wp_position') || 'center';
+          var lsVideo = localStorage.getItem('tn_wp_video');
+          var lsImage = localStorage.getItem('tn_wallpaper');
+
+          if (lsVideo && lsVideo !== '1') {
+            var v = document.createElement('video');
+            v.id = 'bg-video';
+            v.src = lsVideo;
+            v.autoplay = true;
+            v.loop = true;
+            v.muted = true;
+            v.playsInline = true;
+            v.setAttribute('playsinline', '');
+            v.setAttribute('disablepictureinpicture', '');
+            v.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;object-fit:cover;z-index:-1;pointer-events:none;object-position:center ' + pos;
+            document.documentElement.appendChild(v);
+            v.play().catch(function(){});
+          } else if (lsImage) {
+            try {
+              var data = JSON.parse(lsImage);
+              if (data && data.src) {
+                document.documentElement.style.setProperty('--pre-bg', 'url("' + data.src.replace(/"/g, '\\"') + '")');
+              }
+            } catch(e) {}
+          }
+        } catch(e) {}
+
+        /* ── Video keep-alive — runs entirely outside Angular ── */
+        (function () {
+          var _fsTransitioning = false;
+          var _retryTimer = null;
+
+          function getVideo() {
+            return document.getElementById('bg-video');
+          }
+
+          function tryPlay() {
+            var v = getVideo();
+            if (!v || !v.src || _fsTransitioning) return;
+            if (!v.paused) return;
+            v.play().catch(function () {});
+          }
+
+          function scheduleRetry() {
+            if (_retryTimer) clearTimeout(_retryTimer);
+            // Retry at 100, 300, 600, 1000, 1500ms after fullscreen settles
+            var delays = [100, 300, 600, 1000, 1500];
+            var i = 0;
+            function next() {
+              if (i >= delays.length) return;
+              _retryTimer = setTimeout(function () {
+                tryPlay();
+                i++;
+                next();
+              }, delays[i]);
+            }
+            next();
+          }
+
+          document.addEventListener('fullscreenchange', function () {
+            _fsTransitioning = true;
+            // Give the browser time to finish the transition before attempting play
+            setTimeout(function () {
+              _fsTransitioning = false;
+              scheduleRetry();
+            }, 50);
+          });
+
+          document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'visible') tryPlay();
+          });
+
+          window.addEventListener('focus', tryPlay);
+          window.addEventListener('pageshow', tryPlay);
+
+          // Attach pause handler directly on the video once it exists
+          function attachPauseHandler() {
+            var v = getVideo();
+            if (!v) return;
+            v.addEventListener('pause', function () {
+              if (_fsTransitioning) return; // ignore pauses during transition
+              if (document.visibilityState !== 'visible') return;
+              // Small delay so browser finishes whatever caused the pause
+              setTimeout(tryPlay, 80);
+            });
+          }
+
+          // Video may not exist yet — wait for DOM ready
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', attachPauseHandler);
+          } else {
+            attachPauseHandler();
+          }
+          // Also attach after Angular sets the src (observe #bg-video appearing)
+          var mo = new MutationObserver(function () {
+            var v = getVideo();
+            if (v && !v._pauseHandlerAttached) {
+              v._pauseHandlerAttached = true;
+              attachPauseHandler();
+            }
+          });
+          mo.observe(document.documentElement, { childList: true, subtree: true });
+        })();
+        (function () {
+          // Block common keyboard shortcuts
+          document.addEventListener('keydown', function (e) {
+            // F12
+            if (e.key === 'F12') { e.preventDefault(); return; }
+            // Ctrl+Shift+I / Cmd+Option+I  (DevTools)
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'I' || e.key === 'i')) { e.preventDefault(); return; }
+            // Ctrl+Shift+J / Cmd+Option+J  (Console)
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'J' || e.key === 'j')) { e.preventDefault(); return; }
+            // Ctrl+Shift+C  (Inspector)
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'C' || e.key === 'c')) { e.preventDefault(); return; }
+            // Ctrl+U  (View Source)
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'U' || e.key === 'u')) { e.preventDefault(); return; }
+            // Ctrl+S  (Save page)
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'S' || e.key === 's')) { e.preventDefault(); return; }
+            // Ctrl+A  (Select all)
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'A' || e.key === 'a')) { e.preventDefault(); return; }
+            // Ctrl+C  (Copy)
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'C' || e.key === 'c')) { e.preventDefault(); return; }
+          }, true);
+
+          // Block right-click context menu
+          document.addEventListener('contextmenu', function (e) { e.preventDefault(); }, true);
+
+          // Block copy/cut/drag events
+          document.addEventListener('copy',      function (e) { e.preventDefault(); }, true);
+          document.addEventListener('cut',       function (e) { e.preventDefault(); }, true);
+          document.addEventListener('dragstart', function (e) { e.preventDefault(); }, true);
+        })();
+      })();
+    </script>
   </head>
   <body class="ctp-mocha">
     <app-root></app-root>

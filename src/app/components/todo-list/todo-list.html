@@ -54,7 +54,7 @@
             <button class="action-btn edit" (click)="startEdit(todo.id, todo.text)">
               <lucide-icon [img]="PencilIcon" size="13" />
             </button>
-            <button class="action-btn delete" (click)="todoService.delete(todo.id)">
+            <button class="action-btn delete" (click)="requestDelete(todo.id)">
               <lucide-icon [img]="TrashIcon" size="13" />
             </button>
           </div>
@@ -63,3 +63,19 @@
     }
   </div>
 </div>
+
+@if (confirmDeleteId()) {
+  <div class="confirm-backdrop" (click)="cancelDelete()">
+    <div class="confirm-dialog" (click)="$event.stopPropagation()" role="alertdialog">
+      <div class="confirm-icon">
+        <lucide-icon [img]="TrashIcon" size="20" />
+      </div>
+      <h3>Delete Task?</h3>
+      <p>This task will be permanently removed.</p>
+      <div class="confirm-actions">
+        <button class="confirm-btn cancel" (click)="cancelDelete()">Cancel</button>
+        <button class="confirm-btn delete" (click)="doDelete()">Delete</button>
+      </div>
+    </div>
+  </div>
+}

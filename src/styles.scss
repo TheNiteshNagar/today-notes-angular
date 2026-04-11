@@ -49,6 +49,10 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* Prevent text selection globally — allow only in inputs */
+body { user-select: none; -webkit-user-select: none; }
+input, textarea { user-select: text; -webkit-user-select: text; }
+
 html {
   height: 100%;
   font-size: 16px;
@@ -70,7 +74,7 @@ body {
   overflow-y: auto;
 }
 
-/* ── Background video — always playing, never stops ── */
+/* ── Background video — persistent element injected by pre-boot script ── */
 #bg-video {
   position: fixed;
   inset: 0;
@@ -79,8 +83,7 @@ body {
   object-fit: cover;
   z-index: -1;
   pointer-events: none;
-  /* Prevent browser from suspending the video */
-  will-change: transform;
+  display: none;
 }
 
 /* Lucide icons inherit theme color */

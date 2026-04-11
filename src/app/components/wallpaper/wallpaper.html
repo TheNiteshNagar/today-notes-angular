@@ -61,6 +61,22 @@
       }
 
       @if (hasWp()) {
+        <div class="position-section">
+          <p class="section-label">Wallpaper Position</p>
+          <div class="position-grid">
+            @for (pos of positions; track pos.value) {
+              <button
+                class="pos-btn"
+                [class.active]="wpPosition() === pos.value"
+                (click)="setPosition(pos.value)"
+                [title]="pos.label"
+              >{{ pos.label }}</button>
+            }
+          </div>
+        </div>
+      }
+
+      @if (hasWp()) {
         <button class="remove-btn" (click)="remove()">
           <lucide-icon [img]="XIcon" size="13" /> Remove
         </button>

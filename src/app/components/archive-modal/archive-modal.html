@@ -1,38 +1,28 @@
-<div class="archive-wrap">
-  <button class="pill-btn" (click)="toggle()">
-    <lucide-icon [img]="ArchiveIcon" size="14" />
-    Archive
-    @if (todoService.archive().length > 0) {
-      <span class="badge">{{ todoService.archive().length }}</span>
-    }
-  </button>
-</div>
+@if (archiveOpen()) {
+  <div class="modal-backdrop" (click)="onBackdropClick($event)">
+    <div class="modal-panel" role="dialog" aria-modal="true">
 
-@if (open()) {
-  <div class="archive-overlay" (click)="onBackdropClick($event)">
-    <div class="archive-panel" role="dialog" aria-modal="true">
-
-      <div class="panel-header">
-        <div class="panel-title-row">
-          <lucide-icon [img]="ArchiveIcon" size="16" class="title-icon" />
+      <div class="modal-header">
+        <div class="modal-title-row">
+          <lucide-icon [img]="ArchiveIcon" size="18" class="title-icon" />
           <h2>Archive</h2>
-          <span class="entry-total">{{ todoService.archive().length }} days</span>
+          <span class="entry-total">{{ svc.archive().length }} days</span>
         </div>
-        <button class="close-btn" (click)="toggle()">
-          <lucide-icon [img]="XIcon" size="16" />
+        <button class="close-btn" (click)="close()">
+          <lucide-icon [img]="XIcon" size="18" />
         </button>
       </div>
 
-      <div class="panel-body">
-        @if (todoService.archive().length === 0) {
+      <div class="modal-body">
+        @if (svc.archive().length === 0) {
           <div class="empty-state">
-            <lucide-icon [img]="ArchiveIcon" size="32" class="empty-icon" />
+            <lucide-icon [img]="ArchiveIcon" size="36" class="empty-icon" />
             <p>No archived notes yet.</p>
             <span>Tasks are automatically archived at the end of each day.</span>
           </div>
         }
 
-        @for (entry of todoService.archive(); track entry.date) {
+        @for (entry of svc.archive(); track entry.date) {
           <div class="date-group">
             <div class="date-header" (click)="toggleExpand(entry.date)">
               <div class="date-left">
@@ -59,13 +49,13 @@
                   <lucide-icon [img]="TrashIcon" size="13" />
                 </button>
                 <lucide-icon
-                  [img]="expandedDate() === entry.date ? ChevronUpIcon : ChevronDownIcon"
+                  [img]="archiveExpandedDate() === entry.date ? ChevronUpIcon : ChevronDownIcon"
                   size="15" class="chevron"
                 />
               </div>
             </div>
 
-            @if (expandedDate() === entry.date) {
+            @if (archiveExpandedDate() === entry.date) {
               <ul class="todo-list">
                 @for (todo of entry.todos; track todo.id) {
                   <li class="todo-item" [class.done]="todo.done">
@@ -83,20 +73,20 @@
 
     </div>
   </div>
-}
 
-@if (confirmDeleteDate()) {
-  <div class="confirm-backdrop" (click)="cancelDelete()">
-    <div class="confirm-dialog" (click)="$event.stopPropagation()" role="alertdialog">
-      <div class="confirm-icon">
-        <lucide-icon [img]="TrashIcon" size="20" />
-      </div>
-      <h3>Delete Entry?</h3>
-      <p>Permanently remove <strong>{{ formatDate(confirmDeleteDate()!) }}</strong>?</p>
-      <div class="confirm-actions">
-        <button class="confirm-btn cancel" (click)="cancelDelete()">Cancel</button>
-        <button class="confirm-btn delete" (click)="doDelete()">Delete</button>
+  @if (archiveConfirmDelete()) {
+    <div class="confirm-backdrop" (click)="cancelDelete()">
+      <div class="confirm-dialog" (click)="$event.stopPropagation()" role="alertdialog">
+        <div class="confirm-icon">
+          <lucide-icon [img]="TrashIcon" size="22" />
+        </div>
+        <h3>Delete Entry?</h3>
+        <p>This will permanently remove <strong>{{ formatDate(archiveConfirmDelete()!) }}</strong> from your archive.</p>
+        <div class="confirm-actions">
+          <button class="confirm-btn cancel" (click)="cancelDelete()">Cancel</button>
+          <button class="confirm-btn delete" (click)="doDelete()">Delete</button>
+        </div>
       </div>
     </div>
-  </div>
+  }
 }
