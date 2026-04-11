@@ -1,59 +1,82 @@
-# TodayNotesAngular
+<div align="center">
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.7.
+![Screenshot](attachement/Today%20Note%20Asthetic.png)
 
-## Development server
+<br/>
 
-To start a local development server, run:
-
-```bash
-ng serve
+```
+  ╔════════════════════════════╗
+  ║      t o d a y  n o t e s      ║
+  ╚════════════════════════════╝
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+*your quiet little corner of the internet (˘ω˘)*
 
-## Code scaffolding
+[![Live](https://img.shields.io/badge/live-today--notes-a6e3a1?style=flat-square&logo=vercel&logoColor=black)](https://today-notes-lovat.vercel.app/)
+[![Angular](https://img.shields.io/badge/angular-21-dd0031?style=flat-square&logo=angular)](https://angular.dev)
+[![PWA](https://img.shields.io/badge/PWA-ready-89b4fa?style=flat-square)](https://today-notes-lovat.vercel.app/)
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+</div>
 
-```bash
-ng generate component component-name
+---
+
+---
+
+<div align="center">
+
+```
+  ·  · ·  f e a t u r e s  · ·  ·
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+</div>
 
-```bash
-ng generate --help
+```
+  (>_<)  daily tasks — auto-archived when the day ends
+  (o_o)  web search — google · bing · ddg · brave · youtube
+  (^_^)  lofi music player to keep you in the zone
+  (._.)  archive — revisit any past day
+  (*_*)  catppuccin themes — latte · frappe · macchiato · mocha
+  (~_~)  wallpaper picker & focus mode
+  (u_u)  installable PWA — works fully offline
 ```
 
-## Building
+---
 
-To build the project run:
+<div align="center">
 
-```bash
-ng build
+```
+  ·  · ·  s t a c k  · ·  ·
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+</div>
 
-## Running unit tests
+<div align="center">
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+`Angular 21` &nbsp;·&nbsp; `TypeScript` &nbsp;·&nbsp; `IndexedDB` &nbsp;·&nbsp; `Lucide Icons` &nbsp;·&nbsp; `Catppuccin`
 
-```bash
-ng test
+</div>
+
+---
+
+<div align="center">
+
+```
+  ·  · ·  r u n  l o c a l l y  · ·  ·
 ```
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
+</div>
 
 ```bash
-ng e2e
+git clone https://github.com/TheNiteshNagar/today-notes-angular
+cd today-notes-angular
+npm install
+npm start
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+---
 
-## Additional Resources
+<div align="center">
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+*made with (´｡• ᵕ •｡`) ♡ by [Nitesh Nagar](https://github.com/TheNiteshNagar)*
+
+</div>
